@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: marketpro
+      POSTGRES_USER: marketpro
+      POSTGRES_PASSWORD: marketpro
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://marketpro:marketpro@db:5432/marketpro
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: change-me-in-production
+      CORS_ORIGINS: http://localhost:5173
+    ports: ["8000:8000"]
+    depends_on: [db, redis]
+  web:
+    build: ./frontend
+    ports: ["5173:5173"]
+    depends_on: [api]
+volumes:
+  pgdata:
